@@ -86,7 +86,7 @@ def get_status(job_id):
     })
 
 @app.route('/results/<filename>')
-def download_result(filename):
+def get_result(filename):
     return send_from_directory(app.config['RESULT_FOLDER'], filename)
 
 if __name__ == '__main__':

@@ -351,7 +351,8 @@
                     
                     // 다운로드 버튼 설정
                     downloadButton.onclick = () => {
-                        window.location.href = resultUrl;
+                        const filename = resultUrl.split('/').pop();
+                        window.location.href = `${API_BASE_URL}/download/${filename}`;
                     };
                 } else if (status === 'processing') {
                     // 3초 후 다시 확인
