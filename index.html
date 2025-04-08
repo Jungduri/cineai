@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Video Processor</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            text-align: center;
+        }
+        .upload-container {
+            border: 2px dashed #ccc;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+        .button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 10px;
+        }
+        .button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        #status {
+            margin: 20px 0;
+            padding: 10px;
+            border-radius: 4px;
+        }
+        .success {
+            background-color: #dff0d8;
+            color: #3c763d;
+        }
+        .error {
+            background-color: #f2dede;
+            color: #a94442;
+        }
+    </style>
+</head>
+<body>
+    <h1>Video Processor</h1>
+    
+    <div class="upload-container">
+        <h2>동영상 업로드</h2>
+        <input type="file" id="videoInput" accept="video/*" style="display: none;">
+        <button class="button" onclick="document.getElementById('videoInput').click()">파일 선택</button>
+        <p id="fileName">선택된 파일 없음</p>
+        <button class="button" id="uploadButton" disabled>업로드</button>
+    </div>
+
+    <div id="status"></div>
+
+    <div id="downloadSection" style="display: none;">
+        <h2>처리된 파일 다운로드</h2>
+        <button class="button" id="downloadButton">다운로드</button>
+    </div>
+
+    <script>
+        const videoInput = document.getElementById('videoInput');
+        const fileName = document.getElementById('fileName');
+        const uploadButton = document.getElementById('uploadButton');
+        const downloadSection = document.getElementById('downloadSection');
+        const downloadButton = document.getElementById('downloadButton');
+        const status = document.getElementById('status');
+
+        videoInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                fileName.textContent = e.target.files[0].name;
+                uploadButton.disabled = false;
+            } else {
+                fileName.textContent = '선택된 파일 없음';
+                uploadButton.disabled = true;
+            }
+        });
+
+        uploadButton.addEventListener('click', async () => {
+            const file = videoInput.files[0];
+            if (!file) return;
+
+            status.textContent = '업로드 중...';
+            status.className = '';
+
+            try {
+                // 여기에 실제 업로드 로직을 구현할 수 있습니다
+                // 예: FormData를 사용하여 서버로 전송
+                await new Promise(resolve => setTimeout(resolve, 2000)); // 임시 딜레이
+                
+                status.textContent = '업로드 완료!';
+                status.className = 'success';
+                downloadSection.style.display = 'block';
+            } catch (error) {
+                status.textContent = '업로드 실패: ' + error.message;
+                status.className = 'error';
+            }
+        });
+
+        downloadButton.addEventListener('click', () => {
+            // 여기에 실제 다운로드 로직을 구현할 수 있습니다
+            alert('다운로드 기능은 서버 구현 후 사용 가능합니다.');
+        });
+    </script>
+</body>
+</html> 
