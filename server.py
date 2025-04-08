@@ -16,7 +16,9 @@ DOWNLOAD_FOLDER = 'downloads'
 ALLOWED_EXTENSIONS = {'mp4'}
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['DOWNLOAD_FOLDER'] = DOWNLOAD_FOLDER
-AI_SERVER_URL = 'http://localhost:5000'  # AI 서버 주소
+
+# AI 서버 URL 설정
+AI_SERVER_URL = 'https://jungduri.github.io/cineai'
 
 # 필요한 폴더 생성
 for folder in [UPLOAD_FOLDER, DOWNLOAD_FOLDER]:
