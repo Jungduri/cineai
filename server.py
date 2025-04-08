@@ -3,6 +3,7 @@ from flask_cors import CORS
 import os
 import uuid
 import time
+import requests
 from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
@@ -12,6 +13,7 @@ CORS(app)
 UPLOAD_FOLDER = 'uploads'
 ALLOWED_EXTENSIONS = {'mp4'}
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+AI_SERVER_URL = 'http://localhost:5000'  # AI 서버 주소
 
 # 업로드 폴더가 없으면 생성
 if not os.path.exists(UPLOAD_FOLDER):
@@ -50,17 +52,21 @@ def upload_file():
         'start_time': time.time()
     }
     
-    # 테스트용 처리 시뮬레이션 (10초 후 완료)
-    def process_video():
-        time.sleep(10)  # 10초 대기
-        if job_id in jobs:
-            jobs[job_id]['status'] = 'completed'
-            jobs[job_id]['result_url'] = f'/uploads/{saved_filename}'
-    
-    # 비동기 처리 시작
-    from threading import Thread
-    thread = Thread(target=process_video)
-    thread.start()
+    # AI 서버로 파일 전송
+    try:
+        with open(filepath, 'rb') as f:
+            files = {'video': (filename, f, 'video/mp4')}
+            response = requests.post(f'{AI_SERVER_URL}/process', files=files)
+            
+            if response.status_code == 200:
+                result = response.json()
+                jobs[job_id]['ai_job_id'] = result.get('ai_job_id')
+            else:
+                jobs[job_id]['status'] = 'error'
+                jobs[job_id]['error'] = 'AI 서버 처리 실패'
+    except Exception as e:
+        jobs[job_id]['status'] = 'error'
+        jobs[job_id]['error'] = str(e)
     
     return jsonify({'jobId': job_id})
 
@@ -70,9 +76,27 @@ def get_status(job_id):
         return jsonify({'error': '작업을 찾을 수 없습니다.'}), 404
     
     job = jobs[job_id]
+    
+    # AI 서버에서 상태 확인
+    if job['status'] == 'processing' and 'ai_job_id' in job:
+        try:
+            response = requests.get(f'{AI_SERVER_URL}/status/{job["ai_job_id"]}')
+            if response.status_code == 200:
+                ai_status = response.json()
+                if ai_status['status'] == 'completed':
+                    job['status'] = 'completed'
+                    job['result_url'] = ai_status['result_url']
+                elif ai_status['status'] == 'error':
+                    job['status'] = 'error'
+                    job['error'] = ai_status.get('error', 'AI 처리 중 오류 발생')
+        except Exception as e:
+            job['status'] = 'error'
+            job['error'] = str(e)
+    
     return jsonify({
         'status': job['status'],
-        'resultUrl': job.get('result_url')
+        'resultUrl': job.get('result_url'),
+        'error': job.get('error')
     })
 
 @app.route('/uploads/<filename>')
